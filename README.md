@@ -204,7 +204,7 @@ Los archivos JavaScript generados se almacenan en la carpeta `public`.
 
 GitHub Pages:
 
-https://ja-ardila.github.io/web_project_around_es/public/
+https://ja-ardila.github.io/web_project_around/public/
 
 ## Autor
 

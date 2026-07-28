@@ -1,7 +1,17 @@
-export interface UserInfoData {
+export interface UserData {
+  _id: string;
   name: string;
-  job: string;
-  avatar?: string;
+  about: string;
+  avatar: string;
+}
+
+export interface EditProfileFormData {
+  name: string;
+  about: string;
+}
+
+export interface AvatarFormData {
+  avatar: string;
 }
 
 interface UserInfoSelectors {
@@ -54,25 +64,21 @@ export class UserInfo {
     this.avatarElement = avatarElement;
   }
 
-  public getUserInfo(): UserInfoData {
+  public getUserInfo(): EditProfileFormData {
     return {
       name: this.nameElement.textContent ?? "",
-      job: this.jobElement.textContent ?? "",
-      avatar: this.avatarElement.src,
+      about: this.jobElement.textContent ?? "",
     };
   }
 
   public setUserInfo({
     name,
-    job,
+    about,
     avatar,
-  }: UserInfoData): void {
+  }: UserData): void {
     this.nameElement.textContent = name;
-    this.jobElement.textContent = job;
-
-    if (avatar) {
-      this.avatarElement.src = avatar;
-      this.avatarElement.alt = `Avatar de ${name}`;
-    }
+    this.jobElement.textContent = about;
+    this.avatarElement.src = avatar;
+    this.avatarElement.alt = `Avatar de ${name}`;
   }
 }

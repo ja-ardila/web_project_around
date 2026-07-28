@@ -1,11 +1,19 @@
-import { Card } from "./components/Card.js";
+import { Api } from "./components/Api.js";
+import { Card, } from "./components/Card.js";
 import { FormValidator } from "./components/FormValidator.js";
 import { PopupWithForm, } from "./components/PopupWithForm.js";
 import { PopupWithConfirmation } from "./components/PopupWithConfirmation.js";
 import { PopupWithImage } from "./components/PopupWithImage.js";
 import { Section } from "./components/Section.js";
-import { defaultFormConfig, } from "./utils/constants.js";
+import { defaultFormConfig } from "./utils/constants.js";
 import { UserInfo, } from "./components/UserInfo.js";
+const api = new Api({
+    baseUrl: "https://around-api.es.tripleten-services.com/v1",
+    headers: {
+        authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
+        "Content-Type": "application/json",
+    },
+});
 /**
  * Busca un elemento del DOM y genera un error si no existe.
  */
@@ -45,33 +53,12 @@ function handleCardClick(name, link) {
     });
 }
 async function changeCardLike(cardId, isLiked) {
-    const res = await fetch(`https://around-api.es.tripleten-services.com/v1/cards/${cardId}/likes`, {
-        method: isLiked ? "DELETE" : "PUT",
-        headers: {
-            authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
-        },
-    });
-    if (!res.ok) {
-        throw new Error(`Error al modificar el Me gusta: ${res.status}`);
-    }
-    const result = (await res.json());
-    console.log(result);
-    return result.isLiked;
-}
-async function deleteCard(cardId) {
-    const res = await fetch(`https://around-api.es.tripleten-services.com/v1/cards/${cardId}`, {
-        method: "DELETE",
-        headers: {
-            authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
-        },
-    });
-    if (!res.ok) {
-        throw new Error(`Error al eliminar la tarjeta: ${res.status}`);
-    }
+    const updatedCard = await api.changeLikeStatus(cardId, isLiked);
+    return updatedCard.isLiked;
 }
 function handleCardDelete(card) {
     confirmationPopup.setSubmitAction(async () => {
-        await deleteCard(card.getId());
+        await api.deleteCard(card.getId());
         card.removeCard();
     });
     confirmationPopup.open();
@@ -95,125 +82,32 @@ const userInfo = new UserInfo({
     avatarSelector: ".profile__image",
 });
 let currentUserId = "";
-async function getUserProfile() {
+async function updateUserProfile(profileData) {
     try {
-        const res = await fetch("https://around-api.es.tripleten-services.com/v1/users/me", {
-            headers: {
-                authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
-            },
-        });
-        if (!res.ok) {
-            throw new Error(`Error al obtener el perfil: ${res.status}`);
-        }
-        const result = (await res.json());
-        console.log(result);
-        currentUserId = result._id;
-        userInfo.setUserInfo({
-            name: result.name,
-            job: result.about,
-            avatar: result.avatar,
-        });
-    }
-    catch (err) {
-        console.error(err);
-    }
-}
-async function getInitialCards() {
-    try {
-        const res = await fetch("https://around-api.es.tripleten-services.com/v1/cards/", {
-            headers: {
-                authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
-            },
-        });
-        if (!res.ok) {
-            throw new Error(`Error al obtener las tarjetas: ${res.status}`);
-        }
-        const result = (await res.json());
-        console.log(result);
-        cardSection.renderItems([...result].reverse());
-    }
-    catch (err) {
-        console.error(err);
-    }
-}
-async function updateUserProfile(inputValues) {
-    try {
-        const res = await fetch("https://around-api.es.tripleten-services.com/v1/users/me", {
-            method: "PATCH",
-            headers: {
-                authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                name: inputValues.name ?? "",
-                about: inputValues.description ?? "",
-            }),
-        });
-        if (!res.ok) {
-            throw new Error(`Error al actualizar el perfil: ${res.status}`);
-        }
-        const result = (await res.json());
-        console.log(result);
-        currentUserId = result._id;
-        userInfo.setUserInfo({
-            name: result.name,
-            job: result.about,
-            avatar: result.avatar,
-        });
+        const userData = await api.updateUserInfo(profileData);
+        currentUserId = userData._id;
+        userInfo.setUserInfo(userData);
         editPopup.close();
     }
     catch (err) {
         console.error(err);
     }
 }
-async function updateUserAvatar(inputValues) {
+async function updateUserAvatar(avatarData) {
     try {
-        const res = await fetch("https://around-api.es.tripleten-services.com/v1/users/me/avatar", {
-            method: "PATCH",
-            headers: {
-                authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                avatar: inputValues.avatar ?? "",
-            }),
-        });
-        if (!res.ok) {
-            throw new Error(`Error al actualizar el avatar: ${res.status}`);
-        }
-        const result = (await res.json());
-        console.log(result);
-        currentUserId = result._id;
-        userInfo.setUserInfo({
-            name: result.name,
-            job: result.about,
-            avatar: result.avatar,
-        });
+        const userData = await api.updateUserAvatar(avatarData);
+        currentUserId = userData._id;
+        userInfo.setUserInfo(userData);
         avatarPopup.close();
     }
     catch (err) {
         console.error(err);
     }
 }
-async function addNewCard(inputValues) {
+async function addNewCard(cardData) {
     try {
-        const res = await fetch("https://around-api.es.tripleten-services.com/v1/cards/", {
-            method: "POST",
-            headers: {
-                authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                name: inputValues.name ?? "",
-                link: inputValues.link ?? "",
-            }),
-        });
-        if (!res.ok) {
-            throw new Error(`Error al crear la tarjeta: ${res.status}`);
-        }
-        const result = (await res.json());
-        console.log(result);
-        const cardElement = createCard(result);
+        const newCard = await api.addCard(cardData);
+        const cardElement = createCard(newCard);
         cardSection.addItem(cardElement);
         newCardPopup.close();
     }
@@ -223,20 +117,31 @@ async function addNewCard(inputValues) {
 }
 // Popup de edición del perfil.
 const editPopup = new PopupWithForm("#edit-popup", async (inputValues) => {
-    await updateUserProfile(inputValues);
+    const profileData = {
+        name: inputValues.name ?? "",
+        about: inputValues.description ?? "",
+    };
+    await updateUserProfile(profileData);
 });
 // Popup para cambiar el avatar.
 const avatarPopup = new PopupWithForm("#avatar-popup", async (inputValues) => {
-    await updateUserAvatar(inputValues);
+    const avatarData = {
+        avatar: inputValues.avatar ?? "",
+    };
+    await updateUserAvatar(avatarData);
 });
 // Popup para agregar tarjetas.
 const newCardPopup = new PopupWithForm("#new-card-popup", async (inputValues) => {
-    await addNewCard(inputValues);
+    const cardData = {
+        name: inputValues.name ?? "",
+        link: inputValues.link ?? "",
+    };
+    await addNewCard(cardData);
 });
 function fillProfileForm() {
     const currentUserInfo = userInfo.getUserInfo();
     editNameInput.value = currentUserInfo.name;
-    editDescriptionInput.value = currentUserInfo.job;
+    editDescriptionInput.value = currentUserInfo.about;
 }
 // Activación de los listeners de los popups.
 editPopup.setEventListeners();
@@ -267,8 +172,18 @@ addButton.addEventListener("click", () => {
     newCardPopup.open();
 });
 async function initializePage() {
-    await getUserProfile();
-    await getInitialCards();
+    try {
+        const [userData, initialCards] = await Promise.all([
+            api.getUserInfo(),
+            api.getInitialCards(),
+        ]);
+        currentUserId = userData._id;
+        userInfo.setUserInfo(userData);
+        cardSection.renderItems([...initialCards].reverse());
+    }
+    catch (err) {
+        console.error("Fallo al cargar datos iniciales:", err);
+    }
 }
 // Obtención del perfil y las tarjetas desde la API.
 void initializePage();

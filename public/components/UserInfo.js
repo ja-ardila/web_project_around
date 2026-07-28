@@ -22,16 +22,13 @@ export class UserInfo {
     getUserInfo() {
         return {
             name: this.nameElement.textContent ?? "",
-            job: this.jobElement.textContent ?? "",
-            avatar: this.avatarElement.src,
+            about: this.jobElement.textContent ?? "",
         };
     }
-    setUserInfo({ name, job, avatar, }) {
+    setUserInfo({ name, about, avatar, }) {
         this.nameElement.textContent = name;
-        this.jobElement.textContent = job;
-        if (avatar) {
-            this.avatarElement.src = avatar;
-            this.avatarElement.alt = `Avatar de ${name}`;
-        }
+        this.jobElement.textContent = about;
+        this.avatarElement.src = avatar;
+        this.avatarElement.alt = `Avatar de ${name}`;
     }
 }

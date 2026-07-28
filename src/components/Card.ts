@@ -1,9 +1,15 @@
 export interface CardData {
+  _id: string;
   name: string;
   link: string;
-  _id: string;
-  isLiked: boolean;
   owner: string;
+  createdAt: string;
+  isLiked: boolean;
+}
+
+export interface NewCardFormData {
+  name: string;
+  link: string;
 }
 
 type HandleCardClick = (

@@ -49,46 +49,49 @@ export class Api {
     return JSON.parse(responseText) as T;
   }
 
-  public getUserInfo(): Promise<UserData> {
-    return this.request<UserData>("/users/me");
+  public async getUserInfo(): Promise<UserData> {
+    return await this.request<UserData>("/users/me");
   }
 
-  public getInitialCards(): Promise<CardData[]> {
-    return this.request<CardData[]>("/cards/");
+  public async getInitialCards(): Promise<CardData[]> {
+    return await this.request<CardData[]>("/cards/");
   }
 
-  public updateUserInfo(
+  public async updateUserInfo(
     userData: EditProfileFormData,
   ): Promise<UserData> {
-    return this.request<UserData>("/users/me", {
+    return await this.request<UserData>("/users/me", {
       method: "PATCH",
       body: JSON.stringify(userData),
     });
   }
 
-  public updateUserAvatar(
+  public async updateUserAvatar(
     avatarData: AvatarFormData,
   ): Promise<UserData> {
-    return this.request<UserData>("/users/me/avatar", {
-      method: "PATCH",
-      body: JSON.stringify(avatarData),
-    });
+    return await this.request<UserData>(
+      "/users/me/avatar",
+      {
+        method: "PATCH",
+        body: JSON.stringify(avatarData),
+      },
+    );
   }
 
-  public addCard(
+  public async addCard(
     cardData: NewCardFormData,
   ): Promise<CardData> {
-    return this.request<CardData>("/cards/", {
+    return await this.request<CardData>("/cards/", {
       method: "POST",
       body: JSON.stringify(cardData),
     });
   }
 
-  public changeLikeStatus(
+  public async changeLikeStatus(
     cardId: string,
     isLiked: boolean,
   ): Promise<CardData> {
-    return this.request<CardData>(
+    return await this.request<CardData>(
       `/cards/${cardId}/likes`,
       {
         method: isLiked ? "DELETE" : "PUT",
@@ -96,9 +99,14 @@ export class Api {
     );
   }
 
-  public deleteCard(cardId: string): Promise<void> {
-    return this.request<void>(`/cards/${cardId}`, {
-      method: "DELETE",
-    });
+  public async deleteCard(
+    cardId: string,
+  ): Promise<void> {
+    return await this.request<void>(
+      `/cards/${cardId}`,
+      {
+        method: "DELETE",
+      },
+    );
   }
 }

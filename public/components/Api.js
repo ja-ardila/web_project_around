@@ -19,37 +19,37 @@ export class Api {
         }
         return JSON.parse(responseText);
     }
-    getUserInfo() {
-        return this.request("/users/me");
+    async getUserInfo() {
+        return await this.request("/users/me");
     }
-    getInitialCards() {
-        return this.request("/cards/");
+    async getInitialCards() {
+        return await this.request("/cards/");
     }
-    updateUserInfo(userData) {
-        return this.request("/users/me", {
+    async updateUserInfo(userData) {
+        return await this.request("/users/me", {
             method: "PATCH",
             body: JSON.stringify(userData),
         });
     }
-    updateUserAvatar(avatarData) {
-        return this.request("/users/me/avatar", {
+    async updateUserAvatar(avatarData) {
+        return await this.request("/users/me/avatar", {
             method: "PATCH",
             body: JSON.stringify(avatarData),
         });
     }
-    addCard(cardData) {
-        return this.request("/cards/", {
+    async addCard(cardData) {
+        return await this.request("/cards/", {
             method: "POST",
             body: JSON.stringify(cardData),
         });
     }
-    changeLikeStatus(cardId, isLiked) {
-        return this.request(`/cards/${cardId}/likes`, {
+    async changeLikeStatus(cardId, isLiked) {
+        return await this.request(`/cards/${cardId}/likes`, {
             method: isLiked ? "DELETE" : "PUT",
         });
     }
-    deleteCard(cardId) {
-        return this.request(`/cards/${cardId}`, {
+    async deleteCard(cardId) {
+        return await this.request(`/cards/${cardId}`, {
             method: "DELETE",
         });
     }

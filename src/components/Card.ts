@@ -1,7 +1,8 @@
 export interface CardData {
   name: string;
   link: string;
-  _id?: string;
+  _id: string;
+  isLiked: boolean;
 }
 
 type HandleCardClick = (
@@ -9,10 +10,16 @@ type HandleCardClick = (
   link: string,
 ) => void;
 
+type HandleCardLike = (
+  cardId: string,
+  isLiked: boolean,
+) => Promise<boolean>;
+
 export class Card {
   private data: CardData;
   private templateSelector: string;
   private handleCardClick: HandleCardClick;
+  private handleCardLike: HandleCardLike;
 
   private element!: HTMLElement;
   private imageElement!: HTMLImageElement;
@@ -24,10 +31,12 @@ export class Card {
     data: CardData,
     templateSelector: string,
     handleCardClick: HandleCardClick,
+    handleCardLike: HandleCardLike,
   ) {
     this.data = data;
     this.templateSelector = templateSelector;
     this.handleCardClick = handleCardClick;
+    this.handleCardLike = handleCardLike;
   }
 
   private getTemplate(): HTMLElement {
@@ -56,10 +65,34 @@ export class Card {
     return cardElement;
   }
 
-  private handleLikeButtonClick(): void {
+  private updateLikeButton(): void {
     this.likeButton.classList.toggle(
       "card__like-button_is-active",
+      this.data.isLiked,
     );
+
+    this.likeButton.setAttribute(
+      "aria-label",
+      this.data.isLiked
+        ? "Quitar Me gusta"
+        : "Dar Me gusta",
+    );
+  }
+
+  private async handleLikeButtonClick(): Promise<void> {
+    this.likeButton.disabled = true;
+
+    try {
+      this.data.isLiked = await this.handleCardLike(
+        this.data._id,
+        this.data.isLiked,
+      );
+      this.updateLikeButton();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      this.likeButton.disabled = false;
+    }
   }
 
   private handleDeleteButtonClick(): void {
@@ -68,7 +101,7 @@ export class Card {
 
   private setEventListeners(): void {
     this.likeButton.addEventListener("click", () => {
-      this.handleLikeButtonClick();
+      void this.handleLikeButtonClick();
     });
 
     this.deleteButton.addEventListener("click", () => {
@@ -125,6 +158,7 @@ export class Card {
     this.imageElement.src = this.data.link;
     this.imageElement.alt = this.data.name;
     this.titleElement.textContent = this.data.name;
+    this.updateLikeButton();
 
     this.setEventListeners();
 

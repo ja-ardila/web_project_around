@@ -36,9 +36,23 @@ function handleCardClick(name, link) {
         link,
     });
 }
+async function changeCardLike(cardId, isLiked) {
+    const res = await fetch(`https://around-api.es.tripleten-services.com/v1/cards/${cardId}/likes`, {
+        method: isLiked ? "DELETE" : "PUT",
+        headers: {
+            authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
+        },
+    });
+    if (!res.ok) {
+        throw new Error(`Error al modificar el Me gusta: ${res.status}`);
+    }
+    const result = (await res.json());
+    console.log(result);
+    return result.isLiked;
+}
 // Creación de tarjetas.
 function createCard(cardData) {
-    const card = new Card(cardData, "#card-template", handleCardClick);
+    const card = new Card(cardData, "#card-template", handleCardClick, changeCardLike);
     return card.generateCard();
 }
 // Sección de tarjetas.

@@ -16,8 +16,6 @@ export interface ApiUserData {
 }
 
 export interface ApiCardData extends CardData {
-  isLiked: boolean;
-  _id: string;
   owner: string;
   createdAt: string;
 }

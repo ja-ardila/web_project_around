@@ -2,15 +2,17 @@ export class Card {
     data;
     templateSelector;
     handleCardClick;
+    handleCardLike;
     element;
     imageElement;
     titleElement;
     likeButton;
     deleteButton;
-    constructor(data, templateSelector, handleCardClick) {
+    constructor(data, templateSelector, handleCardClick, handleCardLike) {
         this.data = data;
         this.templateSelector = templateSelector;
         this.handleCardClick = handleCardClick;
+        this.handleCardLike = handleCardLike;
     }
     getTemplate() {
         const templateElement = document.querySelector(this.templateSelector);
@@ -25,15 +27,31 @@ export class Card {
         }
         return cardElement;
     }
-    handleLikeButtonClick() {
-        this.likeButton.classList.toggle("card__like-button_is-active");
+    updateLikeButton() {
+        this.likeButton.classList.toggle("card__like-button_is-active", this.data.isLiked);
+        this.likeButton.setAttribute("aria-label", this.data.isLiked
+            ? "Quitar Me gusta"
+            : "Dar Me gusta");
+    }
+    async handleLikeButtonClick() {
+        this.likeButton.disabled = true;
+        try {
+            this.data.isLiked = await this.handleCardLike(this.data._id, this.data.isLiked);
+            this.updateLikeButton();
+        }
+        catch (err) {
+            console.error(err);
+        }
+        finally {
+            this.likeButton.disabled = false;
+        }
     }
     handleDeleteButtonClick() {
         this.element.remove();
     }
     setEventListeners() {
         this.likeButton.addEventListener("click", () => {
-            this.handleLikeButtonClick();
+            void this.handleLikeButtonClick();
         });
         this.deleteButton.addEventListener("click", () => {
             this.handleDeleteButtonClick();
@@ -61,6 +79,7 @@ export class Card {
         this.imageElement.src = this.data.link;
         this.imageElement.alt = this.data.name;
         this.titleElement.textContent = this.data.name;
+        this.updateLikeButton();
         this.setEventListeners();
         return this.element;
     }

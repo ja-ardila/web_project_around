@@ -1,6 +1,7 @@
 export interface CardData {
   name: string;
   link: string;
+  _id?: string;
 }
 
 type HandleCardClick = (

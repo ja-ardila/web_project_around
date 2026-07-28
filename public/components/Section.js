@@ -11,8 +11,8 @@ export class Section {
         }
         this.container = container;
     }
-    renderItems() {
-        this.items.forEach((item) => {
+    renderItems(items = this.items) {
+        items.forEach((item) => {
             this.renderer(item);
         });
     }

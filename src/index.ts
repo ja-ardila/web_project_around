@@ -8,7 +8,8 @@ import { PopupWithImage } from "./components/PopupWithImage.js";
 import { Section } from "./components/Section.js";
 import {
   defaultFormConfig,
-  initialCards,
+  type ApiCardData,
+  type ApiUserData,
 } from "./utils/constants.js";
 import {
   UserInfo,
@@ -113,7 +114,7 @@ let cardSection: Section<CardData>;
 
 cardSection = new Section<CardData>(
   {
-    items: initialCards,
+    items: [],
 
     renderer: (cardData: CardData): void => {
       const cardElement = createCard(cardData);
@@ -126,7 +127,69 @@ cardSection = new Section<CardData>(
 const userInfo = new UserInfo({
   nameSelector: ".profile__title",
   jobSelector: ".profile__description",
+  avatarSelector: ".profile__image",
 });
+
+let currentUserId = "";
+
+async function getUserProfile(): Promise<void> {
+  try {
+    const res = await fetch(
+      "https://around-api.es.tripleten-services.com/v1/users/me",
+      {
+        headers: {
+          authorization:
+            "0643131e-75cd-455c-bdf0-2b7687c050c4",
+        },
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error(
+        `Error al obtener el perfil: ${res.status}`,
+      );
+    }
+
+    const result = (await res.json()) as ApiUserData;
+    console.log(result);
+
+    currentUserId = result._id;
+    userInfo.setUserInfo({
+      name: result.name,
+      job: result.about,
+      avatar: result.avatar,
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function getInitialCards(): Promise<void> {
+  try {
+    const res = await fetch(
+      "https://around-api.es.tripleten-services.com/v1/cards/",
+      {
+        headers: {
+          authorization:
+            "0643131e-75cd-455c-bdf0-2b7687c050c4",
+        },
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error(
+        `Error al obtener las tarjetas: ${res.status}`,
+      );
+    }
+
+    const result = (await res.json()) as ApiCardData[];
+    console.log(result);
+
+    cardSection.renderItems(result);
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 // Popup de edición del perfil.
 const editPopup = new PopupWithForm(
@@ -188,5 +251,8 @@ addButton.addEventListener("click", () => {
   newCardPopup.open();
 });
 
-// Renderizado de las tarjetas iniciales.
-cardSection.renderItems();
+// Obtención de la información del perfil desde la API.
+void getUserProfile();
+
+// Obtención de las tarjetas iniciales desde la API.
+void getInitialCards();

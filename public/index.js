@@ -3,7 +3,7 @@ import { FormValidator } from "./components/FormValidator.js";
 import { PopupWithForm, } from "./components/PopupWithForm.js";
 import { PopupWithImage } from "./components/PopupWithImage.js";
 import { Section } from "./components/Section.js";
-import { defaultFormConfig, initialCards, } from "./utils/constants.js";
+import { defaultFormConfig, } from "./utils/constants.js";
 import { UserInfo, } from "./components/UserInfo.js";
 /**
  * Busca un elemento del DOM y genera un error si no existe.
@@ -44,7 +44,7 @@ function createCard(cardData) {
 // Sección de tarjetas.
 let cardSection;
 cardSection = new Section({
-    items: initialCards,
+    items: [],
     renderer: (cardData) => {
         const cardElement = createCard(cardData);
         cardSection.addItem(cardElement);
@@ -53,7 +53,50 @@ cardSection = new Section({
 const userInfo = new UserInfo({
     nameSelector: ".profile__title",
     jobSelector: ".profile__description",
+    avatarSelector: ".profile__image",
 });
+let currentUserId = "";
+async function getUserProfile() {
+    try {
+        const res = await fetch("https://around-api.es.tripleten-services.com/v1/users/me", {
+            headers: {
+                authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
+            },
+        });
+        if (!res.ok) {
+            throw new Error(`Error al obtener el perfil: ${res.status}`);
+        }
+        const result = (await res.json());
+        console.log(result);
+        currentUserId = result._id;
+        userInfo.setUserInfo({
+            name: result.name,
+            job: result.about,
+            avatar: result.avatar,
+        });
+    }
+    catch (err) {
+        console.error(err);
+    }
+}
+async function getInitialCards() {
+    try {
+        const res = await fetch("https://around-api.es.tripleten-services.com/v1/cards/", {
+            headers: {
+                authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
+            },
+        });
+        if (!res.ok) {
+            throw new Error(`Error al obtener las tarjetas: ${res.status}`);
+        }
+        const result = (await res.json());
+        console.log(result);
+        cardSection.renderItems(result);
+    }
+    catch (err) {
+        console.error(err);
+    }
+}
 // Popup de edición del perfil.
 const editPopup = new PopupWithForm("#edit-popup", (inputValues) => {
     const userData = {
@@ -97,5 +140,7 @@ addButton.addEventListener("click", () => {
     addFormValidator.resetValidation();
     newCardPopup.open();
 });
-// Renderizado de las tarjetas iniciales.
-cardSection.renderItems();
+// Obtención de la información del perfil desde la API.
+void getUserProfile();
+// Obtención de las tarjetas iniciales desde la API.
+void getInitialCards();

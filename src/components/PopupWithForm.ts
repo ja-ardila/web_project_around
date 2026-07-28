@@ -4,12 +4,15 @@ export type FormInputValues = Record<string, string>;
 
 export type FormSubmitHandler = (
   inputValues: FormInputValues,
-) => void;
+) => Promise<void>;
 
 export class PopupWithForm extends Popup {
   private formElement: HTMLFormElement;
   private inputList: HTMLInputElement[];
+  private submitButton: HTMLButtonElement;
+  private submitButtonText: string;
   private handleFormSubmit: FormSubmitHandler;
+  private isSubmitting = false;
 
   constructor(
     popupSelector: string,
@@ -22,7 +25,12 @@ export class PopupWithForm extends Popup {
         ".popup__form",
       );
 
-    if (!formElement) {
+    const submitButton =
+      this.popupElement.querySelector<HTMLButtonElement>(
+        ".popup__button",
+      );
+
+    if (!formElement || !submitButton) {
       throw new Error(
         `No se encontró el formulario en "${popupSelector}".`,
       );
@@ -35,6 +43,9 @@ export class PopupWithForm extends Popup {
       ),
     );
 
+    this.submitButton = submitButton;
+    this.submitButtonText =
+      submitButton.textContent?.trim() ?? "Guardar";
     this.handleFormSubmit = handleFormSubmit;
   }
 
@@ -50,6 +61,42 @@ export class PopupWithForm extends Popup {
     );
   }
 
+  private setLoadingState(isLoading: boolean): void {
+    this.isSubmitting = isLoading;
+    this.formElement.setAttribute(
+      "aria-busy",
+      String(isLoading),
+    );
+    this.submitButton.setAttribute(
+      "aria-disabled",
+      String(isLoading),
+    );
+    this.submitButton.classList.toggle(
+      "popup__button_loading",
+      isLoading,
+    );
+    this.submitButton.textContent = isLoading
+      ? "Guardando..."
+      : this.submitButtonText;
+  }
+
+  private async handleSubmit(): Promise<void> {
+    if (this.isSubmitting) {
+      return;
+    }
+
+    const inputValues = this.getInputValues();
+    this.setLoadingState(true);
+
+    try {
+      await this.handleFormSubmit(inputValues);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      this.setLoadingState(false);
+    }
+  }
+
   public override setEventListeners(): void {
     super.setEventListeners();
 
@@ -57,10 +104,7 @@ export class PopupWithForm extends Popup {
       "submit",
       (event: SubmitEvent) => {
         event.preventDefault();
-
-        const inputValues = this.getInputValues();
-
-        this.handleFormSubmit(inputValues);
+        void this.handleSubmit();
       },
     );
   }

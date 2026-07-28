@@ -222,16 +222,16 @@ async function addNewCard(inputValues) {
     }
 }
 // Popup de edición del perfil.
-const editPopup = new PopupWithForm("#edit-popup", (inputValues) => {
-    void updateUserProfile(inputValues);
+const editPopup = new PopupWithForm("#edit-popup", async (inputValues) => {
+    await updateUserProfile(inputValues);
 });
 // Popup para cambiar el avatar.
-const avatarPopup = new PopupWithForm("#avatar-popup", (inputValues) => {
-    void updateUserAvatar(inputValues);
+const avatarPopup = new PopupWithForm("#avatar-popup", async (inputValues) => {
+    await updateUserAvatar(inputValues);
 });
 // Popup para agregar tarjetas.
-const newCardPopup = new PopupWithForm("#new-card-popup", (inputValues) => {
-    void addNewCard(inputValues);
+const newCardPopup = new PopupWithForm("#new-card-popup", async (inputValues) => {
+    await addNewCard(inputValues);
 });
 function fillProfileForm() {
     const currentUserInfo = userInfo.getUserInfo();

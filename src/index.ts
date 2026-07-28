@@ -392,24 +392,30 @@ async function addNewCard(
 // Popup de edición del perfil.
 const editPopup = new PopupWithForm(
   "#edit-popup",
-  (inputValues: FormInputValues): void => {
-    void updateUserProfile(inputValues);
+  async (
+    inputValues: FormInputValues,
+  ): Promise<void> => {
+    await updateUserProfile(inputValues);
   },
 );
 
 // Popup para cambiar el avatar.
 const avatarPopup = new PopupWithForm(
   "#avatar-popup",
-  (inputValues: FormInputValues): void => {
-    void updateUserAvatar(inputValues);
+  async (
+    inputValues: FormInputValues,
+  ): Promise<void> => {
+    await updateUserAvatar(inputValues);
   },
 );
 
 // Popup para agregar tarjetas.
 const newCardPopup = new PopupWithForm(
   "#new-card-popup",
-  (inputValues: FormInputValues): void => {
-    void addNewCard(inputValues);
+  async (
+    inputValues: FormInputValues,
+  ): Promise<void> => {
+    await addNewCard(inputValues);
   },
 );
 

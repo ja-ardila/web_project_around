@@ -49,6 +49,15 @@
   cursor: default;
 }
 
+.popup__button_loading,
+.popup__button_loading:hover {
+  color: #fff;
+  background: #000;
+  border: none;
+  cursor: wait;
+  pointer-events: none;
+}
+
 .popup__input_type_error {
   border-bottom-color: #ff0000;
 }

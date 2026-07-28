@@ -37,13 +37,42 @@
   max-width: 373px;
 }
 
-.profile__image {
+.profile__avatar-button {
   width: 120px;
   height: 120px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
   border-radius: 50%;
+  border: 0;
+  padding: 0;
+  margin-right: 29px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.profile__avatar-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    rgba(0, 0, 0, 0.8)
+    url("../images/edit-avatar-icon.svg") center no-repeat;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.profile__avatar-button:hover::after,
+.profile__avatar-button:focus-visible::after {
+  opacity: 1;
+}
+
+.profile__image {
+  width: 100%;
+  height: 100%;
+  display: block;
   object-fit: cover;
   background-position: center;
-  margin-right: 29px;
 }
 
 .profile__add-button {
@@ -120,7 +149,7 @@
     max-width: 282px;
   }
 
-  .profile__image {
+  .profile__avatar-button {
     margin-right: 0;
   }
 

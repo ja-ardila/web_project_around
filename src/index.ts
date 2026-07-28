@@ -42,6 +42,11 @@ const addButton =
     ".profile__add-button",
   );
 
+const avatarEditButton =
+  getRequiredElement<HTMLButtonElement>(
+    ".profile__avatar-button",
+  );
+
 // Elementos del formulario de edición.
 const editPopupElement =
   getRequiredElement<HTMLElement>("#edit-popup");
@@ -64,6 +69,16 @@ const editDescriptionInput =
     editForm,
   );
 
+// Elementos del formulario para cambiar el avatar.
+const avatarPopupElement =
+  getRequiredElement<HTMLElement>("#avatar-popup");
+
+const avatarForm =
+  getRequiredElement<HTMLFormElement>(
+    ".popup__form",
+    avatarPopupElement,
+  );
+
 // Elementos del formulario para agregar tarjetas.
 const newCardPopupElement =
   getRequiredElement<HTMLElement>("#new-card-popup");
@@ -78,6 +93,11 @@ const addForm =
 const editFormValidator = new FormValidator(
   defaultFormConfig,
   editForm,
+);
+
+const avatarFormValidator = new FormValidator(
+  defaultFormConfig,
+  avatarForm,
 );
 
 const addFormValidator = new FormValidator(
@@ -292,6 +312,46 @@ async function updateUserProfile(
   }
 }
 
+async function updateUserAvatar(
+  inputValues: FormInputValues,
+): Promise<void> {
+  try {
+    const res = await fetch(
+      "https://around-api.es.tripleten-services.com/v1/users/me/avatar",
+      {
+        method: "PATCH",
+        headers: {
+          authorization:
+            "0643131e-75cd-455c-bdf0-2b7687c050c4",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          avatar: inputValues.avatar ?? "",
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error(
+        `Error al actualizar el avatar: ${res.status}`,
+      );
+    }
+
+    const result = (await res.json()) as ApiUserData;
+    console.log(result);
+
+    currentUserId = result._id;
+    userInfo.setUserInfo({
+      name: result.name,
+      job: result.about,
+      avatar: result.avatar,
+    });
+    avatarPopup.close();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 async function addNewCard(
   inputValues: FormInputValues,
 ): Promise<void> {
@@ -337,6 +397,14 @@ const editPopup = new PopupWithForm(
   },
 );
 
+// Popup para cambiar el avatar.
+const avatarPopup = new PopupWithForm(
+  "#avatar-popup",
+  (inputValues: FormInputValues): void => {
+    void updateUserAvatar(inputValues);
+  },
+);
+
 // Popup para agregar tarjetas.
 const newCardPopup = new PopupWithForm(
   "#new-card-popup",
@@ -354,12 +422,14 @@ function fillProfileForm(): void {
 
 // Activación de los listeners de los popups.
 editPopup.setEventListeners();
+avatarPopup.setEventListeners();
 newCardPopup.setEventListeners();
 imagePopup.setEventListeners();
 confirmationPopup.setEventListeners();
 
 // Activación de la validación.
 editFormValidator.enableValidation();
+avatarFormValidator.enableValidation();
 addFormValidator.enableValidation();
 
 // Apertura del popup de edición.
@@ -367,6 +437,13 @@ editButton.addEventListener("click", () => {
   fillProfileForm();
   editFormValidator.resetValidation();
   editPopup.open();
+});
+
+// Apertura del popup para cambiar el avatar.
+avatarEditButton.addEventListener("click", () => {
+  avatarForm.reset();
+  avatarFormValidator.resetValidation();
+  avatarPopup.open();
 });
 
 // Apertura del popup para agregar tarjetas.

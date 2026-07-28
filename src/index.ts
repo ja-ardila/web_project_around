@@ -109,9 +109,7 @@ function createCard(cardData: CardData): HTMLElement {
 }
 
 // Sección de tarjetas.
-let cardSection: Section<CardData>;
-
-cardSection = new Section<CardData>(
+const cardSection = new Section<CardData>(
   {
     items: [],
 
@@ -184,7 +182,7 @@ async function getInitialCards(): Promise<void> {
     const result = (await res.json()) as ApiCardData[];
     console.log(result);
 
-    cardSection.renderItems(result);
+    cardSection.renderItems([...result].reverse());
   } catch (err) {
     console.error(err);
   }
@@ -201,7 +199,7 @@ async function updateUserProfile(
         headers: {
           authorization:
             "0643131e-75cd-455c-bdf0-2b7687c050c4",
-          "Content-Type": "application/json",
+            "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: inputValues.name ?? "",
@@ -231,6 +229,43 @@ async function updateUserProfile(
   }
 }
 
+async function addNewCard(
+  inputValues: FormInputValues,
+): Promise<void> {
+  try {
+    const res = await fetch(
+      "https://around-api.es.tripleten-services.com/v1/cards/",
+      {
+        method: "POST",
+        headers: {
+          authorization:
+            "0643131e-75cd-455c-bdf0-2b7687c050c4",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: inputValues.name ?? "",
+          link: inputValues.link ?? "",
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error(
+        `Error al crear la tarjeta: ${res.status}`,
+      );
+    }
+
+    const result = (await res.json()) as ApiCardData;
+    console.log(result);
+
+    const cardElement = createCard(result);
+    cardSection.addItem(cardElement);
+    newCardPopup.close();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 // Popup de edición del perfil.
 const editPopup = new PopupWithForm(
   "#edit-popup",
@@ -243,15 +278,7 @@ const editPopup = new PopupWithForm(
 const newCardPopup = new PopupWithForm(
   "#new-card-popup",
   (inputValues: FormInputValues): void => {
-    const cardData: CardData = {
-      name: inputValues.name ?? "",
-      link: inputValues.link ?? "",
-    };
-
-    const cardElement = createCard(cardData);
-
-    cardSection.addItem(cardElement);
-    newCardPopup.close();
+    void addNewCard(inputValues);
   },
 );
 

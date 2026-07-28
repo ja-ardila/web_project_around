@@ -42,8 +42,7 @@ function createCard(cardData) {
     return card.generateCard();
 }
 // Sección de tarjetas.
-let cardSection;
-cardSection = new Section({
+const cardSection = new Section({
     items: [],
     renderer: (cardData) => {
         const cardElement = createCard(cardData);
@@ -91,7 +90,7 @@ async function getInitialCards() {
         }
         const result = (await res.json());
         console.log(result);
-        cardSection.renderItems(result);
+        cardSection.renderItems([...result].reverse());
     }
     catch (err) {
         console.error(err);
@@ -127,19 +126,39 @@ async function updateUserProfile(inputValues) {
         console.error(err);
     }
 }
+async function addNewCard(inputValues) {
+    try {
+        const res = await fetch("https://around-api.es.tripleten-services.com/v1/cards/", {
+            method: "POST",
+            headers: {
+                authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name: inputValues.name ?? "",
+                link: inputValues.link ?? "",
+            }),
+        });
+        if (!res.ok) {
+            throw new Error(`Error al crear la tarjeta: ${res.status}`);
+        }
+        const result = (await res.json());
+        console.log(result);
+        const cardElement = createCard(result);
+        cardSection.addItem(cardElement);
+        newCardPopup.close();
+    }
+    catch (err) {
+        console.error(err);
+    }
+}
 // Popup de edición del perfil.
 const editPopup = new PopupWithForm("#edit-popup", (inputValues) => {
     void updateUserProfile(inputValues);
 });
 // Popup para agregar tarjetas.
 const newCardPopup = new PopupWithForm("#new-card-popup", (inputValues) => {
-    const cardData = {
-        name: inputValues.name ?? "",
-        link: inputValues.link ?? "",
-    };
-    const cardElement = createCard(cardData);
-    cardSection.addItem(cardElement);
-    newCardPopup.close();
+    void addNewCard(inputValues);
 });
 function fillProfileForm() {
     const currentUserInfo = userInfo.getUserInfo();

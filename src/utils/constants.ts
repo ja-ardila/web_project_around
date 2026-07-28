@@ -16,7 +16,6 @@ export interface ApiUserData {
 }
 
 export interface ApiCardData extends CardData {
-  owner: string;
   createdAt: string;
 }
 

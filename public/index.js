@@ -1,6 +1,7 @@
 import { Card } from "./components/Card.js";
 import { FormValidator } from "./components/FormValidator.js";
 import { PopupWithForm, } from "./components/PopupWithForm.js";
+import { PopupWithConfirmation } from "./components/PopupWithConfirmation.js";
 import { PopupWithImage } from "./components/PopupWithImage.js";
 import { Section } from "./components/Section.js";
 import { defaultFormConfig, } from "./utils/constants.js";
@@ -30,6 +31,8 @@ const editFormValidator = new FormValidator(defaultFormConfig, editForm);
 const addFormValidator = new FormValidator(defaultFormConfig, addForm);
 // Popup de imagen.
 const imagePopup = new PopupWithImage("#image-popup");
+// Popup de confirmación para eliminar una tarjeta.
+const confirmationPopup = new PopupWithConfirmation("#delete-card-popup");
 function handleCardClick(name, link) {
     imagePopup.open({
         name,
@@ -50,9 +53,27 @@ async function changeCardLike(cardId, isLiked) {
     console.log(result);
     return result.isLiked;
 }
+async function deleteCard(cardId) {
+    const res = await fetch(`https://around-api.es.tripleten-services.com/v1/cards/${cardId}`, {
+        method: "DELETE",
+        headers: {
+            authorization: "0643131e-75cd-455c-bdf0-2b7687c050c4",
+        },
+    });
+    if (!res.ok) {
+        throw new Error(`Error al eliminar la tarjeta: ${res.status}`);
+    }
+}
+function handleCardDelete(card) {
+    confirmationPopup.setSubmitAction(async () => {
+        await deleteCard(card.getId());
+        card.removeCard();
+    });
+    confirmationPopup.open();
+}
 // Creación de tarjetas.
 function createCard(cardData) {
-    const card = new Card(cardData, "#card-template", handleCardClick, changeCardLike);
+    const card = new Card(cardData, "#card-template", handleCardClick, changeCardLike, handleCardDelete, currentUserId);
     return card.generateCard();
 }
 // Sección de tarjetas.
@@ -183,6 +204,7 @@ function fillProfileForm() {
 editPopup.setEventListeners();
 newCardPopup.setEventListeners();
 imagePopup.setEventListeners();
+confirmationPopup.setEventListeners();
 // Activación de la validación.
 editFormValidator.enableValidation();
 addFormValidator.enableValidation();
@@ -198,7 +220,9 @@ addButton.addEventListener("click", () => {
     addFormValidator.resetValidation();
     newCardPopup.open();
 });
-// Obtención de la información del perfil desde la API.
-void getUserProfile();
-// Obtención de las tarjetas iniciales desde la API.
-void getInitialCards();
+async function initializePage() {
+    await getUserProfile();
+    await getInitialCards();
+}
+// Obtención del perfil y las tarjetas desde la API.
+void initializePage();

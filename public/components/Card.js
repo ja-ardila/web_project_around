@@ -3,16 +3,20 @@ export class Card {
     templateSelector;
     handleCardClick;
     handleCardLike;
+    handleCardDelete;
+    currentUserId;
     element;
     imageElement;
     titleElement;
     likeButton;
     deleteButton;
-    constructor(data, templateSelector, handleCardClick, handleCardLike) {
+    constructor(data, templateSelector, handleCardClick, handleCardLike, handleCardDelete, currentUserId) {
         this.data = data;
         this.templateSelector = templateSelector;
         this.handleCardClick = handleCardClick;
         this.handleCardLike = handleCardLike;
+        this.handleCardDelete = handleCardDelete;
+        this.currentUserId = currentUserId;
     }
     getTemplate() {
         const templateElement = document.querySelector(this.templateSelector);
@@ -47,15 +51,17 @@ export class Card {
         }
     }
     handleDeleteButtonClick() {
-        this.element.remove();
+        this.handleCardDelete(this);
     }
     setEventListeners() {
         this.likeButton.addEventListener("click", () => {
             void this.handleLikeButtonClick();
         });
-        this.deleteButton.addEventListener("click", () => {
-            this.handleDeleteButtonClick();
-        });
+        if (this.data.owner === this.currentUserId) {
+            this.deleteButton.addEventListener("click", () => {
+                this.handleDeleteButtonClick();
+            });
+        }
         this.imageElement.addEventListener("click", () => {
             this.handleCardClick(this.data.name, this.data.link);
         });
@@ -80,7 +86,16 @@ export class Card {
         this.imageElement.alt = this.data.name;
         this.titleElement.textContent = this.data.name;
         this.updateLikeButton();
+        if (this.data.owner !== this.currentUserId) {
+            this.deleteButton.remove();
+        }
         this.setEventListeners();
         return this.element;
+    }
+    getId() {
+        return this.data._id;
+    }
+    removeCard() {
+        this.element.remove();
     }
 }

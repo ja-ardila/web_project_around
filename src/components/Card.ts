@@ -3,6 +3,7 @@ export interface CardData {
   link: string;
   _id: string;
   isLiked: boolean;
+  owner: string;
 }
 
 type HandleCardClick = (
@@ -15,11 +16,15 @@ type HandleCardLike = (
   isLiked: boolean,
 ) => Promise<boolean>;
 
+type HandleCardDelete = (card: Card) => void;
+
 export class Card {
   private data: CardData;
   private templateSelector: string;
   private handleCardClick: HandleCardClick;
   private handleCardLike: HandleCardLike;
+  private handleCardDelete: HandleCardDelete;
+  private currentUserId: string;
 
   private element!: HTMLElement;
   private imageElement!: HTMLImageElement;
@@ -32,11 +37,15 @@ export class Card {
     templateSelector: string,
     handleCardClick: HandleCardClick,
     handleCardLike: HandleCardLike,
+    handleCardDelete: HandleCardDelete,
+    currentUserId: string,
   ) {
     this.data = data;
     this.templateSelector = templateSelector;
     this.handleCardClick = handleCardClick;
     this.handleCardLike = handleCardLike;
+    this.handleCardDelete = handleCardDelete;
+    this.currentUserId = currentUserId;
   }
 
   private getTemplate(): HTMLElement {
@@ -96,7 +105,7 @@ export class Card {
   }
 
   private handleDeleteButtonClick(): void {
-    this.element.remove();
+    this.handleCardDelete(this);
   }
 
   private setEventListeners(): void {
@@ -104,9 +113,11 @@ export class Card {
       void this.handleLikeButtonClick();
     });
 
-    this.deleteButton.addEventListener("click", () => {
-      this.handleDeleteButtonClick();
-    });
+    if (this.data.owner === this.currentUserId) {
+      this.deleteButton.addEventListener("click", () => {
+        this.handleDeleteButtonClick();
+      });
+    }
 
     this.imageElement.addEventListener("click", () => {
       this.handleCardClick(
@@ -160,8 +171,20 @@ export class Card {
     this.titleElement.textContent = this.data.name;
     this.updateLikeButton();
 
+    if (this.data.owner !== this.currentUserId) {
+      this.deleteButton.remove();
+    }
+
     this.setEventListeners();
 
     return this.element;
+  }
+
+  public getId(): string {
+    return this.data._id;
+  }
+
+  public removeCard(): void {
+    this.element.remove();
   }
 }
